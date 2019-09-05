@@ -2,10 +2,11 @@ package com.dubrovskyi.testtask.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+//I would suggest Lombok as must-to-use library for POJO
 public class DirectResponse {
 
   @JsonProperty("dep_sid")
-  private int depSid;
+  private int depSid;//is there any particular reason why u r using primitive instead of an Object??
   @JsonProperty("arr_sid")
   private int arrSid;
   @JsonProperty("direct_bus_route")

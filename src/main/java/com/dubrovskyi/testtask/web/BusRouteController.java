@@ -15,15 +15,16 @@ public class BusRouteController {
 
   private final BusRouteService busRouteService;
 
-  public BusRouteController(BusRouteService busRouteService) {
+  public BusRouteController(BusRouteService busRouteService) {//again, consider lombok usage
     this.busRouteService = busRouteService;
   }
 
   @GetMapping("/direct")
-  public ResponseEntity<DirectResponse> direct(@RequestParam(name = "dep_sid") int depSid,
-                                               @RequestParam(name = "arr_sid") int arrSid ) {
-
+  public ResponseEntity<DirectResponse> direct(@RequestParam(name = "dep_sid") int depSid,//Personally, I'm not primitive fan, so dont really like it here
+                                               @RequestParam(name = "arr_sid") int arrSid ) {//in my opinion parameters must be more self-descriptive
+//would suggest logs on controller level
     DirectResponse direct = busRouteService.isDirect(depSid, arrSid);
     return new ResponseEntity<>(direct, HttpStatus.OK);
+//    return ResponseEntity.ok(direct); - there are few useful shortcuts
   }
 }

@@ -18,6 +18,7 @@ import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Set;
 import java.util.stream.StreamSupport;
@@ -25,6 +26,7 @@ import java.util.stream.StreamSupport;
 @Service
 public class BusRouteServiceImpl implements BusRouteService {
 
+	//Honestly, I haven't seen log message usage like this, so not sure whether it is correct or not
   private static final String           LOG_MESSAGE__NO_FILEPATH               = "No filepath specified, no routes will be initialized";
   private static final String           LOG_MESSAGE__WRONG_FILE                = "File %s not found or can not be read, no routes will be initialized";
   private static final String           LOG_MESSAGE__WRONG_FILE_FORMAT         = "File %s has wrong format. Some routes may not be initialized";
@@ -44,14 +46,15 @@ public class BusRouteServiceImpl implements BusRouteService {
 
   @PostConstruct
   @Override
-  public void initializeRoutes() {
+  public void initializeRoutes() {//this method is a bit overwhelmed, I would suggest make it more readable
     log.info(LOG_MESSAGE__START_INITIALIZING_ROUTES);
     long timeStart = Calendar.getInstance().getTimeInMillis();
+    LocalDateTime.now().getNano(); // this new API is more flexible then Calendar/Date APIs
     routemap = createRouteMap();
     String line;
     boolean routesConsistant = true;
     if (appArgs.getSourceArgs().length == 0) {
-      log.error(LOG_MESSAGE__NO_FILEPATH);
+      log.error(LOG_MESSAGE__NO_FILEPATH);//no parameter log is still acceptable
       return;
     }
     String filePath = appArgs.getSourceArgs()[FIRST_POSITION];
@@ -61,7 +64,9 @@ public class BusRouteServiceImpl implements BusRouteService {
         routesConsistant = fillRoute(line);
       }
     } catch (IOException e) {
-      log.error(String.format(LOG_MESSAGE__WRONG_FILE, filePath));
+      log.error(String.format(LOG_MESSAGE__WRONG_FILE, filePath));//would not recommend doing so
+      log.error("File {} not found or can not be read, no routes will be initialized", filePath);/*this is more natural usage, 
+      since under the hood there is a logic to check where specific log level is available*/ 
     }
     if (!routesConsistant) {
       log.error(LOG_MESSAGE__WRONG_FILE_FORMAT, filePath);
@@ -71,7 +76,7 @@ public class BusRouteServiceImpl implements BusRouteService {
   }
 
   @Override
-  public DirectResponse isDirect(int depSid, int arrSid) {
+  public DirectResponse isDirect(int depSid, int arrSid) {//if u r Lambda-Jedi u can compress this method into 1 line)
     Set<Integer> departureRoutes = routemap.get(depSid);
     Set<Integer> arrivalRoutes = routemap.get(arrSid);
     departureRoutes.retainAll(arrivalRoutes);
@@ -85,7 +90,7 @@ public class BusRouteServiceImpl implements BusRouteService {
   }
 
   private boolean fillRoute(String line) {
-    if (splitPattern == null) splitPattern = SPLIT_PATTERN__WHITESPACE;
+    if (splitPattern == null) splitPattern = SPLIT_PATTERN__WHITESPACE;//bad practice to use if without {}
     Iterable<String> strings = Splitter.on(splitPattern).split(line);
 
     try {
@@ -94,6 +99,7 @@ public class BusRouteServiceImpl implements BusRouteService {
       StreamSupport.stream(strings.spliterator(), false)
         .skip(1)
         .filter(s -> !EMPTY_STRING.equals(s) )
+//        .filter(s -> !s.isEmpty()) - empty-check already present, NPE check should be considered I guess
         .map(Integer::parseInt)
         .forEach(x -> routemap.put(x, routeId));
     }

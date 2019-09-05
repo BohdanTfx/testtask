@@ -51,9 +51,12 @@ public class BusRouteServiceImplTest {
 
   @Test
   public void initializeRoutesNoArgument() throws Exception {
+		//Generally, there is a good prectice into dividing test into three parts - prepare, test, verify
     String[] strings = { };
     when(appArgs.getSourceArgs()).thenReturn(strings);
+    
     busRouteService.initializeRoutes();
+    
     assertEquals (createEmptyRouteMap(), busRouteService.getRoutemap());
   }
 
